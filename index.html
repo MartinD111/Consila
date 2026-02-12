@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="sl" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consila d.o.o. | Biometric Security Solutions</title>
+
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            DEFAULT: '#0056b3', // Royal Blue from logo
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            200: '#bae0fd',
+                            300: '#7cc3fb',
+                            400: '#36a2f7',
+                            500: '#0c87eb',
+                            600: '#006cc8',
+                            700: '#0056b3',
+                            800: '#06498c',
+                            900: '#0a3d72',
+                            950: '#07264a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.cdnfonts.com/css/samsung-sans" rel="stylesheet">
+
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Samsung Sans', 'Inter', sans-serif;
+        }
+
+        /* IMPROVED: Liquid Frosted Glass Effect for Popup */
+        .frosted-glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow:
+                0 20px 40px rgba(0, 0, 0, 0.1),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.5),
+                inset 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .dark .glass-nav {
+            background: rgba(15, 23, 42, 0.90);
+            border-bottom: 1px solid #1e293b;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #0056b3;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #06498c;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Timeline Animations */
+        .timeline-item {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .timeline-item.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Continuous Marquee Animation */
+        @keyframes marquee {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .animate-marquee {
+            display: flex;
+            width: max-content;
+            animation: marquee 60s linear infinite;
+        }
+
+        .animate-marquee:hover {
+            animation-play-state: paused;
+        }
+
+        .shadow-mask {
+            mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-800">
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- ICONS WRAPPER ---
+        const IconWrapper = ({ name, className, size }) => {
+            return <i data-lucide={name} className={className} style={{ width: size, height: size }}></i>;
+        };
+
+        // --- DATA ---
+        const languages = [
+            { code: 'sl', name: 'Slovenščina', flag: 'https://flagcdn.com/w40/si.png' },
+            { code: 'en', name: 'English', flag: 'https://flagcdn.com/w40/gb.png' },
+            { code: 'es', name: 'Español', flag: 'https://flagcdn.com/w40/es.png' }
+        ];
+
+        const translations = {
+            sl: {
+                nav: { home: "Domov", solutions: "Rešitve", menu: "Meni" },
+                popup: { about: "O nas & Zgodovina", partners: "Partnerstva", gallery: "Galerija", contact: "Kontakt" },
+                hero: {
+                    title: "Napredne svetovalne in biometrične rešitve",
+                    subtitle: "Svetovalno podjetje (Consulting firm) in zanesljiv partner vladam pri implementaciji varnostnih dokumentov.",
+                    cta: "Naše reference",
+                    years: "Od leta 2013"
+                },
+                about: {
+                    title: "O podjetju Consila",
+                    desc: [
+                        "Podjetje Consila je specializirano svetovalno podjetje ('Consulting firm'), ustanovljeno leta 2013 v Sloveniji. Ponujamo celovite svetovalne storitve in rešitve na enem mestu ('one-stop-shop'), ki državam omogočajo suveren nadzor nad identiteto in varnostjo.",
+                        "Zavezani smo k prenosu znanja in tehnologije, s posebnim poudarkom na dolgoročnih partnerstvih v Afriki."
+                    ],
+                    historyTitle: "Naša pot skozi čas",
+                    timeline: [
+                        { year: "2013", title: "Ustanovitev v EU", desc: "Ustanovitev svetovalnega podjetja Consila v Sloveniji z vizijo celovitih vladnih rešitev.", img: "./ust.jpg" },
+                        { year: "2015", title: "Širitev v Afriko", desc: "Vzpostavitev prisotnosti v Ekvatorialni Gvineji in začetek ključnih projektov.", img: "./eg.jpeg" },
+                        { year: "2017", title: "Biometrična platforma", desc: "Implementacija sistema za izdajo potnih listov, osebnih izkaznic in dovoljenj za prebivanje.", img: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80" },
+                        { year: "2019", title: "Prometni sistemi", desc: "Vzpostavitev sistema za izdajo prometnih dovoljenj in nadzor vozniških dovoljenj.", img: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&q=80" },
+                        { year: "2021", title: "Varnost in meje", desc: "Vzpostavitev registra kazenskih evidenc in ICAO skladnega nadzora meja.", img: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80" },
+                        { year: "2025", title: "Vzdrževanje sistemov", desc: "Vzdrževanje vzpostavljenih sistemov.", img: "./cnedoge.jpg" }
+                    ]
+                },
+                solutions: {
+                    title: "Kaj zagotavljamo",
+                    items: [
+                        { title: "Biometrična platforma", icon: "fingerprint", desc: "Izdaja vseh državnih dokumentov: potni listi, osebne izkaznice, dovoljenja za bivanje.", img: "https://images.unsplash.com/photo-1555431189-0fabf2667795?auto=format&fit=crop&q=80" },
+                        { title: "Službene izkaznice", icon: "id-card", desc: "Namenski sistemi za vladne institucije in zdravstvene zavarovalnice.", img: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80" },
+                        { title: "DDV Sistem", icon: "percent", desc: "Sistem za zbiranje davka na dodano vrednost z nagrajevanjem končnih uporabnikov.", img: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80" },
+                        { title: "Prometna dovoljenja", icon: "car", desc: "Sistem za izdajo dovoljenj za vozila in plačevanje glob.", img: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=80" },
+                        { title: "Vozniška dovoljenja", icon: "file-check", desc: "Nadzor vozniških dovoljenj in procesiranje plačil glob.", img: "https://images.unsplash.com/photo-1628520338573-4927230559eb?auto=format&fit=crop&q=80" },
+                        { title: "Kazenski register", icon: "database", desc: "Vzpostavitev baze kazenskih evidenc in usposabljanje forenzičnega osebja.", img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80" },
+                        { title: "Nadzor meja", icon: "plane", desc: "ICAO skladen nadzor za letališča, pristanišča in kopenske meje.", img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80" },
+                        { title: "E-Vize", icon: "globe", desc: "Spletne vloge za vize, procesiranje plačil in izdaja nalepk.", img: "https://images.unsplash.com/photo-1569407228235-9a744831a150?auto=format&fit=crop&q=80" },
+                        { title: "Usposabljanje", icon: "shield", desc: "Policijsko in vojaško usposabljanje ter uvoz/izvoz opreme.", img: "https://images.unsplash.com/photo-1508614589041-895b8c02a78c?auto=format&fit=crop&q=80" }
+                    ]
+                },
+                partners: {
+                    title: "Strateško partnerstvo",
+                    cetis_desc: "Skupina CETIS, ki jo sestavlja 8 podjetij, ponuja potovalne in osebne dokumente ter celovite rešitve za upravljanje identitete in izdajo dokumentov, fleksibilno embalažo, rešitve na področju komercialnih tiskovin, kartonsko embalažo ter druge izdelke in storitve.",
+                },
+                gallery: {
+                    title: "Galerija utrinkov",
+                    desc: "Pogled v zakulisje naših implementacij."
+                },
+                footer: { rights: "Vse pravice pridržane." }
+            },
+            en: {
+                nav: { home: "Home", solutions: "Solutions", menu: "Menu" },
+                popup: { about: "About & History", partners: "Partnerships", gallery: "Gallery", contact: "Contact" },
+                hero: {
+                    title: "Advanced Biometric Solutions",
+                    subtitle: "Consulting firm and one-stop-shop services tailored for government institutions.",
+                    cta: "Our References",
+                    years: "Since 2013"
+                },
+                about: {
+                    title: "About Consila",
+                    desc: [
+                        "Founded in 2013 in Slovenia (EU), Consila is a consulting firm providing tailored solutions from requirement design to full implementation.",
+                        "We are committed to expanding in Africa, transferring knowledge, and establishing long-term joint venture partnerships."
+                    ],
+                    historyTitle: "Our Journey",
+                    timeline: [
+                        { year: "2013", title: "Foundation", desc: "Founded in Slovenia, EU, as a consulting firm for comprehensive solutions.", img: "./ust.jpg" },
+                        { year: "2015", title: "Expansion to Africa", desc: "Establishing presence in Equatorial Guinea and starting major projects.", img: "./eg.jpeg" },
+                        { year: "2017", title: "Biometric Platform", desc: "Issuing Passports, ID cards, Residence permits for national coverage.", img: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80" },
+                        { year: "2019", title: "Transport Systems", desc: "Vehicle permit issuing and driving license control systems.", img: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&q=80" },
+                        { year: "2021", title: "Security & Borders", desc: "Criminal Register Database and ICAO compliant Border control establishment.", img: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80" },
+                        { year: "2025", title: "System Maintenance", desc: "Maintenance of established systems.", img: "./cnedoge.jpg" }
+                    ]
+                },
+                solutions: {
+                    title: "Our Services",
+                    items: [
+                        { title: "Biometric Platform", icon: "fingerprint", desc: "Issuing Passports, ID cards, Residence permits, and Driving Licenses.", img: "https://images.unsplash.com/photo-1555431189-0fabf2667795?auto=format&fit=crop&q=80" },
+                        { title: "Dedicated ID Badges", icon: "id-card", desc: "Issuing systems for Governmental institutions or Health Insurance.", img: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80" },
+                        { title: "VAT System", icon: "percent", desc: "Value Added Tax recollection system by awarding end users.", img: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80" },
+                        { title: "Vehicle Permits", icon: "car", desc: "Vehicle permit issuing and fine payment systems.", img: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=80" },
+                        { title: "Driving Licenses", icon: "file-check", desc: "License control and fine payment system processing.", img: "https://images.unsplash.com/photo-1628520338573-4927230559eb?auto=format&fit=crop&q=80" },
+                        { title: "Criminal Register", icon: "database", desc: "Database establishment and forensic personnel training.", img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80" },
+                        { title: "Border Control", icon: "plane", desc: "ICAO compliant control for Airports, Ports, and Ground Borders.", img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80" },
+                        { title: "Online VISA", icon: "globe", desc: "Online application with payment processing and sticker issuing.", img: "https://images.unsplash.com/photo-1569407228235-9a744831a150?auto=format&fit=crop&q=80" },
+                        { title: "Training & Export", icon: "shield", desc: "Police/Military training and import/export of enforcement products.", img: "https://images.unsplash.com/photo-1508614589041-895b8c02a78c?auto=format&fit=crop&q=80" }
+                    ]
+                },
+                partners: {
+                    title: "Strategic Partnership",
+                    cetis_desc: "The CETIS Group, which comprises 8 companies, offers travel and personal documents and comprehensive solutions for identity management and document issuing, flexible packaging, commercial printing solutions, printed cardboard packaging and other products and services",
+                },
+                gallery: {
+                    title: "Gallery",
+                    desc: "Behind the scenes of our implementations."
+                },
+                footer: { rights: "All rights reserved." }
+            },
+            es: {
+                nav: { home: "Inicio", solutions: "Soluciones", menu: "Menú" },
+                popup: { about: "Nosotros & Historia", partners: "Alianzas", gallery: "Galería", contact: "Contacto" },
+                hero: {
+                    title: "Soluciones Biométricas Avanzadas",
+                    subtitle: "Empresa de consultoría y servicios integrales para instituciones gubernamentales.",
+                    cta: "Nuestras Referencias",
+                    years: "Desde 2013"
+                },
+                about: {
+                    title: "Sobre Consila",
+                    desc: [
+                        "Fundada en 2013 en Eslovenia (UE), Consila es una empresa de consultoría que ofrece soluciones a medida desde el diseño hasta la implementación total.",
+                        "Estamos comprometidos con la expansión en África, transfiriendo conocimiento y estableciendo empresas conjuntas."
+                    ],
+                    historyTitle: "Nuestra Historia",
+                    timeline: [
+                        { year: "2013", title: "Fundación", desc: "Fundada en Eslovenia como firma de consultoría.", img: "./ust.jpg" },
+                        { year: "2015", title: "Expansión a África", desc: "Establecimiento en Guinea Ecuatorial e inicio de grandes proyectos.", img: "./eg.jpeg" },
+                        { year: "2017", title: "Plataforma Biométrica", desc: "Emisión de pasaportes, DNI y permisos de residencia.", img: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80" },
+                        { year: "2019", title: "Sistemas de Transporte", desc: "Permisos de vehículos y control de licencias de conducir.", img: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&q=80" },
+                        { year: "2021", title: "Seguridad y Fronteras", desc: "Registro criminal y control fronterizo compatible con OACI.", img: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80" },
+                        { year: "2025", title: "Mantenimiento de Sistemas", desc: "Mantenimiento de los sistemas establecidos.", img: "./cnedoge.jpg" }
+                    ]
+                },
+                solutions: {
+                    title: "Nuestros Servicios",
+                    items: [
+                        { title: "Plataforma Biométrica", icon: "fingerprint", desc: "Emisión de Pasaportes, DNI, Permisos de Residencia.", img: "https://images.unsplash.com/photo-1555431189-0fabf2667795?auto=format&fit=crop&q=80" },
+                        { title: "Insignias de Identificación", icon: "id-card", desc: "Sistemas para instituciones gubernamentales o seguros de salud.", img: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80" },
+                        { title: "Sistema de IVA", icon: "percent", desc: "Recaudación del Impuesto al Valor Agregado premiando a usuarios.", img: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80" },
+                        { title: "Permisos de Vehículos", icon: "car", desc: "Emisión de permisos y sistema de pago de multas.", img: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=80" },
+                        { title: "Licencias de Conducir", icon: "file-check", desc: "Control de licencias y procesamiento de pagos.", img: "https://images.unsplash.com/photo-1628520338573-4927230559eb?auto=format&fit=crop&q=80" },
+                        { title: "Registro Criminal", icon: "database", desc: "Base de datos y capacitación forense.", img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80" },
+                        { title: "Control Fronterizo", icon: "plane", desc: "Control OACI para aeropuertos, puertos y fronteras terrestres.", img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80" },
+                        { title: "VISA en Línea", icon: "globe", desc: "Solicitud en línea con procesamiento de pagos.", img: "https://images.unsplash.com/photo-1569407228235-9a744831a150?auto=format&fit=crop&q=80" },
+                        { title: "Entrenamiento", icon: "shield", desc: "Entrenamiento policial/militar e importación de equipos.", img: "https://images.unsplash.com/photo-1508614589041-895b8c02a78c?auto=format&fit=crop&q=80" }
+                    ]
+                },
+                partners: {
+                    title: "Alianza Estratégica",
+                    cetis_desc: "El Grupo CETIS, integrado por 8 empresas, ofrece documentos personales y de viaje, así como soluciones integrales para la gestión de la identidad y la expedición de documentos, embalajes flexibles, soluciones de impresión comercial, embalajes de cartón impresos y otros productos y servicios.",
+                },
+                gallery: {
+                    title: "Galería",
+                    desc: "Detrás de escena."
+                },
+                footer: { rights: "Todos los derechos reservados." }
+            }
+        };
+
+        const galleryImages = [
+            "https://images.unsplash.com/photo-1577962917302-cd874c4e31d2?auto=format&fit=crop&q=80",
+            "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80",
+            "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80",
+            "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&q=80",
+            "https://images.unsplash.com/photo-1560179707-f14e90ef3dab?auto=format&fit=crop&q=80",
+            "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80"
+        ];
+
+        const App = () => {
+            const [lang, setLang] = useState('sl');
+            const [darkMode, setDarkMode] = useState(false);
+            const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
+            const langDropdownRef = useRef(null);
+
+            // Carousel State for Solutions
+            const [solIndex, setSolIndex] = useState(0);
+            const [visibleItems, setVisibleItems] = useState(3);
+            const [activeSection, setActiveSection] = useState('home');
+
+            const t = translations[lang];
+
+            useEffect(() => {
+                if (darkMode) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+                setTimeout(() => lucide.createIcons(), 50);
+            }, [lang, solIndex, darkMode]);
+
+            useEffect(() => {
+                const handleResize = () => {
+                    if (window.innerWidth >= 1024) setVisibleItems(3);
+                    else if (window.innerWidth >= 640) setVisibleItems(2);
+                    else setVisibleItems(1);
+                };
+                handleResize();
+                window.addEventListener('resize', handleResize);
+                return () => window.removeEventListener('resize', handleResize);
+            }, []);
+
+            useEffect(() => {
+                const timer = setInterval(() => {
+                    setSolIndex((current) => {
+                        const maxIndex = t.solutions.items.length - visibleItems;
+                        return current >= maxIndex ? 0 : current + 1;
+                    });
+                }, 5000);
+                return () => clearInterval(timer);
+            }, [t.solutions.items.length, visibleItems, lang]);
+
+            useEffect(() => {
+                const handleClickOutside = (event) => {
+                    if (langDropdownRef.current && !langDropdownRef.current.contains(event.target)) {
+                        setIsLangDropdownOpen(false);
+                    }
+                };
+                document.addEventListener('mousedown', handleClickOutside);
+                return () => document.removeEventListener('mousedown', handleClickOutside);
+            }, []);
+
+            // Track active section on scroll
+            useEffect(() => {
+                const sections = ['home', 'solutions', 'about', 'partners', 'gallery', 'contact'];
+                const handleScroll = () => {
+                    let current = 'home';
+                    for (const id of sections) {
+                        const el = document.getElementById(id);
+                        if (el) {
+                            const rect = el.getBoundingClientRect();
+                            if (rect.top <= 120) {
+                                current = id;
+                            }
+                        }
+                    }
+                    setActiveSection(current);
+                };
+                window.addEventListener('scroll', handleScroll, { passive: true });
+                handleScroll();
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            const scrollToSection = (id) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    const headerOffset = 80;
+                    const elementPosition = element.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: "smooth"
+                    });
+                }
+            };
+
+            const changeLang = (code) => {
+                setLang(code);
+                setIsLangDropdownOpen(false);
+            };
+
+            const currentLangData = languages.find(l => l.code === lang);
+
+            // --- COMPONENTS ---
+
+            const Logo = () => (
+                <div
+                    className="flex items-center cursor-pointer h-20"
+                    onClick={() => scrollToSection('home')}
+                >
+                    <img
+                        src={darkMode ? "./logo-light.png" : "./logo.png"}
+                        alt="Consila"
+                        className={`h-full w-auto object-contain ${darkMode ? '' : 'mix-blend-multiply'}`}
+                        onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                        }}
+                    />
+
+                    {/* Fallback in case image fails */}
+                    <div className="hidden items-center gap-2 font-bold text-2xl tracking-tight text-slate-900">
+                        <div className="w-9 h-9 bg-brand-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-200 overflow-hidden shrink-0">
+                            <span className="font-bold text-lg absolute">C</span>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            // === Interactive Map/Path Timeline Component ===
+            const Timeline = ({ items }) => {
+                const containerRef = useRef(null);
+                const [progressHeight, setProgressHeight] = useState(0);
+                const [visibleItems, setVisibleItems] = useState([]);
+
+                useEffect(() => {
+                    const handleScroll = () => {
+                        if (!containerRef.current) return;
+
+                        const container = containerRef.current;
+                        const rect = container.getBoundingClientRect();
+                        const windowHeight = window.innerHeight;
+                        const triggerPoint = windowHeight * 0.75;
+
+                        const relativeTop = rect.top - triggerPoint;
+                        const totalHeight = rect.height;
+
+                        let progress = 0;
+                        if (relativeTop < 0) {
+                            progress = Math.abs(relativeTop);
+                        }
+                        progress = Math.min(progress, totalHeight);
+
+                        setProgressHeight(progress);
+
+                        const newVisibleItems = [];
+                        const itemElements = container.querySelectorAll('.timeline-node');
+                        itemElements.forEach((el, index) => {
+                            const itemRect = el.getBoundingClientRect();
+                            if (itemRect.top < windowHeight * 0.85) {
+                                newVisibleItems.push(index);
+                            }
+                        });
+                        setVisibleItems(newVisibleItems);
+                    };
+
+                    window.addEventListener('scroll', handleScroll);
+                    handleScroll();
+                    return () => window.removeEventListener('scroll', handleScroll);
+                }, []);
+
+                return (
+                    <div className="relative py-10 pl-4 md:pl-0" ref={containerRef}>
+                        <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 border-l-2 border-dashed border-slate-300 -translate-x-1/2 h-full"></div>
+
+                        <div
+                            className="absolute left-4 md:left-1/2 top-0 w-1 bg-brand-600 -translate-x-1/2 shadow-[0_0_10px_rgba(0,86,179,0.5)] transition-all duration-100 ease-linear rounded-full"
+                            style={{ height: `${progressHeight}px` }}
+                        >
+                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-4 h-4 bg-white border-4 border-brand-600 rounded-full shadow-lg z-20">
+                                <div className="absolute inset-0 bg-brand-600 rounded-full animate-ping opacity-75"></div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-16 md:space-y-24 relative z-10">
+                            {items.map((item, idx) => {
+                                const isVisible = visibleItems.includes(idx);
+                                const isEven = idx % 2 === 0;
+
+                                return (
+                                    <div
+                                        key={idx}
+                                        className={`timeline-node relative flex flex-col md:flex-row items-center gap-8 ${isVisible ? 'visible' : ''} timeline-item`}
+                                    >
+                                        <div className="absolute left-4 md:left-1/2 -translate-x-1/2 w-8 h-8 bg-white border-2 border-slate-200 rounded-full flex items-center justify-center z-10 shadow-sm font-bold text-xs text-slate-500">
+                                            {item.year.slice(2)}
+                                        </div>
+
+                                        <div className={`flex-1 md:w-1/2 w-full pl-12 md:pl-0 ${isEven ? 'md:text-right md:pr-16' : 'md:order-2 md:pl-16'}`}>
+                                            <span className="inline-block px-3 py-1 rounded-full bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 text-xs font-bold mb-2 border border-brand-100 dark:border-brand-800">
+                                                {item.year}
+                                            </span>
+                                            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{item.title}</h3>
+                                            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{item.desc}</p>
+                                        </div>
+
+                                        <div className={`flex-1 md:w-1/2 w-full pl-12 md:pl-0 ${isEven ? 'md:order-2 md:pl-16' : 'md:text-right md:pr-16'}`}>
+                                            <div className="relative group overflow-hidden rounded-2xl shadow-md border border-slate-100 aspect-video hover:shadow-xl transition-all duration-500">
+                                                <img
+                                                    src={item.img}
+                                                    alt={item.title}
+                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                );
+            };
+
+            return (
+                <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+
+                    {/* --- HEADER (Fixed Top) --- */}
+                    <nav className="fixed w-full z-50 top-0 py-2 glass-nav px-4">
+                        <div className="max-w-7xl mx-auto flex justify-between items-center h-16">
+                            <Logo />
+
+                            <div className="hidden lg:flex items-center bg-slate-100/80 dark:bg-slate-800/80 rounded-full px-1.5 py-1 border border-slate-200/50 dark:border-slate-700/50">
+                                <button onClick={() => scrollToSection('home')} className={`px-5 py-2 font-bold text-sm rounded-full transition-all duration-300 ease-in-out ${activeSection === 'home' ? 'bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-400 shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-white/60 dark:hover:bg-slate-700/60'}`}>{t.nav.home}</button>
+                                <button onClick={() => scrollToSection('solutions')} className={`px-5 py-2 font-bold text-sm rounded-full transition-all duration-300 ease-in-out ${activeSection === 'solutions' ? 'bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-400 shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-white/60 dark:hover:bg-slate-700/60'}`}>{t.nav.solutions}</button>
+                                <button onClick={() => scrollToSection('about')} className={`px-5 py-2 font-bold text-sm rounded-full transition-all duration-300 ease-in-out ${activeSection === 'about' ? 'bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-400 shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-white/60 dark:hover:bg-slate-700/60'}`}>{t.popup.about}</button>
+                                <button onClick={() => scrollToSection('partners')} className={`px-5 py-2 font-bold text-sm rounded-full transition-all duration-300 ease-in-out ${activeSection === 'partners' ? 'bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-400 shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-white/60 dark:hover:bg-slate-700/60'}`}>{t.popup.partners}</button>
+                                <button onClick={() => scrollToSection('gallery')} className={`px-5 py-2 font-bold text-sm rounded-full transition-all duration-300 ease-in-out ${activeSection === 'gallery' ? 'bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-400 shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-white/60 dark:hover:bg-slate-700/60'}`}>{t.popup.gallery}</button>
+                            </div>
+
+                            <div className="flex items-center gap-2 md:gap-4">
+                                <div className="relative" ref={langDropdownRef}>
+                                    <button
+                                        onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
+                                        className="w-10 h-10 rounded-full overflow-hidden border border-brand-200 shadow-sm shrink-0 flex items-center justify-center hover:scale-105 transition-transform bg-white text-brand-700"
+                                    >
+                                        <div className="flex flex-col items-center justify-center scale-75">
+                                            <img src={currentLangData.flag} alt={lang} className="w-6 h-4 object-cover rounded shadow-sm mb-1" />
+                                            <span className="text-[10px] font-bold leading-none">{lang.toUpperCase()}</span>
+                                        </div>
+                                    </button>
+
+                                    {isLangDropdownOpen && (
+                                        <div className="absolute top-full right-0 mt-2 w-32 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden animate-fade-in z-50">
+                                            {languages.map((l) => (
+                                                <button
+                                                    key={l.code}
+                                                    onClick={() => changeLang(l.code)}
+                                                    className={`w-full text-left px-4 py-2 text-sm flex items-center gap-3 hover:bg-slate-50 transition-colors ${lang === l.code ? 'bg-brand-50 text-brand-700 font-semibold' : 'text-slate-600'}`}
+                                                >
+                                                    <img src={l.flag} alt={l.code} className="w-5 h-4 object-cover rounded shadow-sm" />
+                                                    {l.code.toUpperCase()}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Dark Mode Toggle */}
+                                <button
+                                    onClick={() => setDarkMode(!darkMode)}
+                                    className="w-10 h-10 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-center hover:scale-105 transition-all bg-white dark:bg-slate-800 text-slate-600 dark:text-yellow-400"
+                                >
+                                    <IconWrapper name={darkMode ? "sun" : "moon"} size={20} />
+                                </button>
+
+                                <button onClick={() => scrollToSection('contact')} className="px-4 py-2 bg-slate-900 dark:bg-brand-600 text-white rounded-full text-xs font-bold hover:bg-brand-600 dark:hover:bg-brand-500 transition-colors shadow-lg hidden xs:block">
+                                    {t.popup.contact}
+                                </button>
+                            </div>
+                        </div>
+                    </nav >
+
+                    {/* --- MAIN CONTENT (One Page Scroll) --- */}
+                    < div className="pt-20" >
+
+                        {/* Hero Section */}
+                        < div id="home" className="animate-fade-in" >
+                            <header className="relative pt-12 pb-20 overflow-hidden text-center md:text-left px-4">
+                                <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+                                    <div className="relative z-10">
+                                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 dark:bg-slate-800 border border-brand-100 dark:border-slate-700 text-brand-700 dark:text-brand-400 text-sm font-medium mb-6">
+                                            <span className="w-2 h-2 rounded-full bg-brand-600 animate-pulse"></span>
+                                            {t.hero.years}
+                                        </div>
+                                        <h1 className="text-4xl lg:text-6xl font-bold text-slate-900 dark:text-white leading-tight mb-6">
+                                            {t.hero.title}
+                                        </h1>
+                                        <p className="text-lg text-slate-600 dark:text-slate-400 mb-8 max-w-lg mx-auto md:mx-0">
+                                            {t.hero.subtitle}
+                                        </p>
+                                        <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                                            <button onClick={() => scrollToSection('partners')} className="px-8 py-4 bg-slate-900 dark:bg-brand-600 text-white rounded-full font-semibold shadow-lg hover:bg-slate-800 dark:hover:bg-brand-500 transition-all flex items-center justify-center gap-2">
+                                                {t.hero.cta}
+                                                <IconWrapper name="chevron-right" size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="relative">
+                                        <div className="absolute inset-0 bg-brand-500 blur-[100px] opacity-20 rounded-full"></div>
+                                        <img
+                                            src="./passports.jpg"
+                                            className="relative z-10 rounded-[2.5rem] shadow-2xl w-full"
+                                            alt="Security"
+                                        />
+                                    </div>
+                                </div>
+                            </header>
+
+                            {/* Solutions Continuous Marquee */}
+                            <section id="solutions" className="py-24 bg-white dark:bg-slate-900 rounded-t-[3rem] shadow-[0_-10px_40px_rgba(0,0,0,0.02)] overflow-hidden transition-colors duration-300">
+                                <div className="max-w-7xl mx-auto px-4 mb-16">
+                                    <div className="text-center">
+                                        <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">{t.solutions.title}</h2>
+                                        <div className="h-1.5 w-20 bg-brand-600 rounded-full mx-auto"></div>
+                                    </div>
+                                </div>
+
+                                <div className="relative shadow-mask">
+                                    <div className="animate-marquee flex gap-6 py-4">
+                                        {/* Original items */}
+                                        {t.solutions.items.map((item, idx) => (
+                                            <div key={`orig-${idx}`} className="w-[350px] flex-shrink-0">
+                                                <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl overflow-hidden hover:bg-white dark:hover:bg-slate-700 hover:shadow-xl transition-all duration-300 group border border-slate-100 dark:border-slate-700 cursor-default flex flex-col h-full hover:-translate-y-1">
+                                                    <div className="h-48 overflow-hidden relative">
+                                                        <img
+                                                            src={item.img}
+                                                            alt={item.title}
+                                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                        />
+                                                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent"></div>
+                                                        <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+                                                            <div className="bg-white/90 backdrop-blur-sm p-2 rounded-xl text-brand-600 shadow-sm">
+                                                                <IconWrapper name={item.icon} size={20} />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="p-6 flex-1 flex flex-col">
+                                                        <h3 className="font-bold text-slate-900 dark:text-white text-lg mb-2">{item.title}</h3>
+                                                        <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{item.desc}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {/* Duplicate items for seamless loop */}
+                                        {t.solutions.items.map((item, idx) => (
+                                            <div key={`dup-${idx}`} className="w-[350px] flex-shrink-0">
+                                                <div className="bg-slate-50 rounded-2xl overflow-hidden hover:bg-white hover:shadow-xl transition-all duration-300 group border border-slate-100 cursor-default flex flex-col h-full hover:-translate-y-1">
+                                                    <div className="h-48 overflow-hidden relative">
+                                                        <img
+                                                            src={item.img}
+                                                            alt={item.title}
+                                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                        />
+                                                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent"></div>
+                                                        <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+                                                            <div className="bg-white/90 backdrop-blur-sm p-2 rounded-xl text-brand-600 shadow-sm">
+                                                                <IconWrapper name={item.icon} size={20} />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="p-6 flex-1 flex flex-col">
+                                                        <h3 className="font-bold text-slate-900 text-lg mb-2">{item.title}</h3>
+                                                        <p className="text-slate-600 text-sm leading-relaxed">{item.desc}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
+                        </div >
+
+                        {/* About Section */}
+                        < section id="about" className="py-24 bg-slate-50 dark:bg-slate-950 transition-colors duration-300" >
+                            <div className="max-w-5xl mx-auto px-4">
+                                <div className="text-center mb-16">
+                                    <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                        <IconWrapper name="info" size={32} />
+                                    </div>
+                                    <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">{t.about.title}</h2>
+                                    <div className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed max-w-2xl mx-auto">
+                                        {t.about.desc.map((paragraph, index) => (
+                                            <p key={index} className="mb-4 last:mb-0">{paragraph}</p>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="bg-white dark:bg-slate-900 p-6 md:p-12 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-800">
+                                    <div className="text-center mb-16">
+                                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white inline-flex items-center gap-3">
+                                            <span className="p-2 bg-brand-100 dark:bg-slate-800 rounded-full text-brand-600 dark:text-brand-400"><IconWrapper name="history" size={24} /></span>
+                                            {t.about.historyTitle}
+                                        </h3>
+                                    </div>
+                                    <Timeline items={t.about.timeline} />
+                                </div>
+                            </div>
+                        </section >
+
+                        {/* Partners Section */}
+                        < section id="partners" className="py-24 bg-white dark:bg-slate-900 relative overflow-hidden transition-colors duration-300" >
+                            <div className="max-w-5xl mx-auto px-4 relative z-10">
+                                <div className="bg-slate-900 text-white rounded-[2.5rem] p-8 md:p-12 shadow-2xl relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/20 rounded-full blur-3xl -mr-16 -mt-16"></div>
+
+                                    <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center">
+                                        <div>
+                                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-brand-300 text-xs font-bold uppercase tracking-widest mb-6">
+                                                Strategic Partner
+                                            </div>
+                                            <h2 className="text-3xl md:text-4xl font-bold mb-6">{t.partners.title}</h2>
+                                            <p className="text-slate-300 text-lg leading-relaxed mb-8">{t.partners.cetis_desc}</p>
+                                        </div>
+                                        <div className="bg-white text-slate-900 rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-inner">
+                                            <img
+                                                src="./cetis_logo.png"
+                                                alt="CETIS"
+                                                className="h-16 w-auto object-contain mb-4"
+                                            />
+                                            <p className="font-semibold text-slate-700">Cetis d.d.</p>
+                                            <p className="text-sm text-slate-500">Celje, Slovenia</p>
+                                            <div className="mt-6 flex flex-wrap justify-center gap-2">
+                                                <span className="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold">Security Printing</span>
+                                                <span className="px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold">Biometrics</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section >
+
+                        {/* Gallery Section */}
+                        < section id="gallery" className="py-24 bg-slate-50 dark:bg-slate-950 transition-colors duration-300" >
+                            <div className="max-w-6xl mx-auto px-4">
+                                <div className="text-center mb-16">
+                                    <div className="w-16 h-16 bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                        <IconWrapper name="image" size={32} />
+                                    </div>
+                                    <h2 className="text-3xl font-bold text-slate-900 dark:text-white">{t.gallery.title}</h2>
+                                    <p className="text-slate-500 dark:text-slate-400 mt-2">{t.gallery.desc}</p>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                                    {galleryImages.map((img, idx) => (
+                                        <div key={idx} className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg group">
+                                            <img src={img} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="Gallery" />
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                                                <span className="text-white font-bold text-sm tracking-wide bg-black/50 px-3 py-1 rounded-lg backdrop-blur-md">Project Phase {idx + 1}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </section >
+
+                        <footer id="contact" className="bg-slate-900 text-white py-16">
+                            <div className="max-w-7xl mx-auto px-4 text-center">
+                                <div className="inline-block p-4 bg-white/10 rounded-full shadow-md mb-8">
+                                    <IconWrapper name="mail" size={24} className="text-brand-400" />
+                                </div>
+                                <h2 className="text-2xl font-bold text-white mb-8">{t.popup.contact}</h2>
+                                <div className="flex flex-col md:flex-row justify-center gap-6 md:gap-12 mb-12 text-slate-300 font-medium">
+                                    <span className="flex items-center justify-center gap-2 hover:text-brand-400 transition-colors cursor-pointer">
+                                        <IconWrapper name="phone" size={18} /> +386 1 234 5678
+                                    </span>
+                                    <span className="flex items-center justify-center gap-2 hover:text-brand-400 transition-colors cursor-pointer">
+                                        <IconWrapper name="mail" size={18} /> info@consila.si
+                                    </span>
+                                    <span className="flex items-center justify-center gap-2 hover:text-brand-400 transition-colors cursor-pointer">
+                                        <IconWrapper name="map-pin" size={18} /> Ljubljana, Slovenija
+                                    </span>
+                                </div>
+                                <p className="text-sm text-slate-500 border-t border-white/10 pt-8">&copy; {new Date().getFullYear()} Consila d.o.o. {t.footer.rights}</p>
+                            </div>
+                        </footer>
+
+                    </div >
+                </div >
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>

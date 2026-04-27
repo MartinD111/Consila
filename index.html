@@ -177,7 +177,7 @@
         const translations = {
             sl: {
                 nav: { home: "Domov", solutions: "Rešitve", menu: "Meni" },
-                popup: { about: "O nas & Zgodovina", partners: "Partnerstva", gallery: "Galerija", contact: "Kontakt" },
+                popup: { about: "O nas & Zgodovina", partners: "Partnerstva", contact: "Kontakt" },
                 hero: {
                     title: "Napredne svetovalne in biometrične rešitve",
                     subtitle: "Svetovalno podjetje (Consulting firm) in zanesljiv partner vladam pri implementaciji varnostnih dokumentov.",
@@ -218,15 +218,12 @@
                     title: "Strateško partnerstvo",
                     cetis_desc: "Skupina CETIS, ki jo sestavlja 8 podjetij, ponuja potovalne in osebne dokumente ter celovite rešitve za upravljanje identitete in izdajo dokumentov, fleksibilno embalažo, rešitve na področju komercialnih tiskovin, kartonsko embalažo ter druge izdelke in storitve.",
                 },
-                gallery: {
-                    title: "Galerija utrinkov",
-                    desc: "Pogled v zakulisje naših implementacij."
-                },
+
                 footer: { rights: "Vse pravice pridržane." }
             },
             en: {
                 nav: { home: "Home", solutions: "Solutions", menu: "Menu" },
-                popup: { about: "About & History", partners: "Partnerships", gallery: "Gallery", contact: "Contact" },
+                popup: { about: "About & History", partners: "Partnerships", contact: "Contact" },
                 hero: {
                     title: "Advanced Biometric Solutions",
                     subtitle: "Consulting firm and one-stop-shop services tailored for government institutions.",
@@ -267,15 +264,12 @@
                     title: "Strategic Partnership",
                     cetis_desc: "The CETIS Group, which comprises 8 companies, offers travel and personal documents and comprehensive solutions for identity management and document issuing, flexible packaging, commercial printing solutions, printed cardboard packaging and other products and services",
                 },
-                gallery: {
-                    title: "Gallery",
-                    desc: "Behind the scenes of our implementations."
-                },
+
                 footer: { rights: "All rights reserved." }
             },
             es: {
                 nav: { home: "Inicio", solutions: "Soluciones", menu: "Menú" },
-                popup: { about: "Nosotros & Historia", partners: "Alianzas", gallery: "Galería", contact: "Contacto" },
+                popup: { about: "Nosotros & Historia", partners: "Alianzas", contact: "Contacto" },
                 hero: {
                     title: "Soluciones Biométricas Avanzadas",
                     subtitle: "Empresa de consultoría y servicios integrales para instituciones gubernamentales.",
@@ -316,22 +310,12 @@
                     title: "Alianza Estratégica",
                     cetis_desc: "El Grupo CETIS, integrado por 8 empresas, ofrece documentos personales y de viaje, así como soluciones integrales para la gestión de la identidad y la expedición de documentos, embalajes flexibles, soluciones de impresión comercial, embalajes de cartón impresos y otros productos y servicios.",
                 },
-                gallery: {
-                    title: "Galería",
-                    desc: "Detrás de escena."
-                },
+
                 footer: { rights: "Todos los derechos reservados." }
             }
         };
 
-        const galleryImages = [
-            "https://images.unsplash.com/photo-1577962917302-cd874c4e31d2?auto=format&fit=crop&q=80",
-            "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80",
-            "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80",
-            "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&q=80",
-            "https://images.unsplash.com/photo-1560179707-f14e90ef3dab?auto=format&fit=crop&q=80",
-            "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80"
-        ];
+
 
         const App = () => {
             const [lang, setLang] = useState('sl');
@@ -388,7 +372,7 @@
 
             // Track active section on scroll
             useEffect(() => {
-                const sections = ['home', 'solutions', 'about', 'partners', 'gallery', 'contact'];
+                const sections = ['home', 'solutions', 'about', 'partners', 'contact'];
                 const handleScroll = () => {
                     let current = 'home';
                     for (const id of sections) {
@@ -562,7 +546,7 @@
                                 <button onClick={() => scrollToSection('solutions')} className={`px-5 py-2 font-bold text-sm rounded-full transition-all duration-300 ease-in-out ${activeSection === 'solutions' ? 'bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-400 shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-white/60 dark:hover:bg-slate-700/60'}`}>{t.nav.solutions}</button>
                                 <button onClick={() => scrollToSection('about')} className={`px-5 py-2 font-bold text-sm rounded-full transition-all duration-300 ease-in-out ${activeSection === 'about' ? 'bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-400 shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-white/60 dark:hover:bg-slate-700/60'}`}>{t.popup.about}</button>
                                 <button onClick={() => scrollToSection('partners')} className={`px-5 py-2 font-bold text-sm rounded-full transition-all duration-300 ease-in-out ${activeSection === 'partners' ? 'bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-400 shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-white/60 dark:hover:bg-slate-700/60'}`}>{t.popup.partners}</button>
-                                <button onClick={() => scrollToSection('gallery')} className={`px-5 py-2 font-bold text-sm rounded-full transition-all duration-300 ease-in-out ${activeSection === 'gallery' ? 'bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-400 shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-white/60 dark:hover:bg-slate-700/60'}`}>{t.popup.gallery}</button>
+
                             </div>
 
                             <div className="flex items-center gap-2 md:gap-4">
@@ -767,28 +751,7 @@
                             </div>
                         </section >
 
-                        {/* Gallery Section */}
-                        < section id="gallery" className="py-24 bg-slate-50 dark:bg-slate-950 transition-colors duration-300" >
-                            <div className="max-w-6xl mx-auto px-4">
-                                <div className="text-center mb-16">
-                                    <div className="w-16 h-16 bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                        <IconWrapper name="image" size={32} />
-                                    </div>
-                                    <h2 className="text-3xl font-bold text-slate-900 dark:text-white">{t.gallery.title}</h2>
-                                    <p className="text-slate-500 dark:text-slate-400 mt-2">{t.gallery.desc}</p>
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                                    {galleryImages.map((img, idx) => (
-                                        <div key={idx} className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg group">
-                                            <img src={img} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="Gallery" />
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
-                                                <span className="text-white font-bold text-sm tracking-wide bg-black/50 px-3 py-1 rounded-lg backdrop-blur-md">Project Phase {idx + 1}</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </section >
+
 
                         <footer id="contact" className="bg-slate-900 text-white py-16">
                             <div className="max-w-7xl mx-auto px-4 text-center">
